@@ -11,6 +11,7 @@ public class NFA implements NFAInterface {
 
     private HashSet<NFAState> states; // States
     private HashSet<Character> alphabet; // Alphabet
+    private final char EMPTY_CHAR = 'e';
 
     /**
      * Constructor, just instantiates our two instance variables.
@@ -126,6 +127,16 @@ public class NFA implements NFAInterface {
      */
     public DFA getDFA() {
             // TODO: THIS
+            DFA test = new DFA();
+
+            NFAState s = getStartState(); 
+            System.out.println(s);      
+            System.out.println("ECLOSURE STATES TO FOLLOW");
+            for (NFAState state : eClosure(s)) {
+                System.out.println(state);
+            }
+            
+            return test;
     }
 
     /**
@@ -146,12 +157,28 @@ public class NFA implements NFAInterface {
      * @param s
      * @return set of states that can be reached from s on epsilon trans.
      */
-    public Set<NFAState> eClosure(NFAState s) {
-            // TODO: THIS
+    public HashSet<NFAState> eClosure(NFAState s) {
+        HashSet<NFAState> visited = new HashSet<NFAState>();
+        HashSet<NFAState> eClosed = eClosureRecurse(s, visited);
+        return eClosed;
+    }
+
+    private HashSet<NFAState> eClosureRecurse(NFAState s, HashSet<NFAState> visited) {
+        HashSet<NFAState> eClosed = new HashSet<NFAState>();
+        HashSet<NFAState> toVisit = s.transition('e') == null ? new HashSet<NFAState>() : s.transition('e');
+        for (NFAState state: toVisit) {
+            if (!visited.contains(state)) {
+                visited.add(state);
+                eClosed.add(state);
+                eClosed.addAll(eClosureRecurse(state, visited));
+            }
+        }
+        return eClosed;
     }
 
     public String toString() {
             // TODO: THIS
+            return "";
     }
 
     /**
