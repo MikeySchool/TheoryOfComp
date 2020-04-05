@@ -147,7 +147,11 @@ public class NFA implements NFAInterface {
      * @return set of states that can be reached from s on epsilon trans.
      */
     public Set<NFAState> eClosure(NFAState s) {
-            // TODO:: THIS
+            // TODO: THIS
+    }
+
+    public String toString() {
+            // TODO: THIS
     }
 
     /**
@@ -162,17 +166,13 @@ public class NFA implements NFAInterface {
         return c == 'e';
     }
 
-    public String toString() {
-            // TODO: THIS
-    }
-
     /**
      * Just a quick private method that I made to get a state by name.
      * 
      * @param name: String
      * @return NFAState
      */
-    public NFAState getState(String name) {
+    private NFAState getState(String name) {
         for (NFAState s : states) {
             if (s.getName().equals(name)) {
                 return s;
