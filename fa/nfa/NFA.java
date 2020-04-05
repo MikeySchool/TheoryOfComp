@@ -147,7 +147,7 @@ public class NFA implements NFAInterface {
      * @return set of states that can be reached from s on epsilon trans.
      */
     public Set<NFAState> eClosure(NFAState s) {
-            TODO:: THIS
+            // TODO:: THIS
     }
 
     /**
