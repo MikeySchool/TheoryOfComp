@@ -1,6 +1,7 @@
 package fa.nfa;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.Queue;
 import java.util.Stack;
@@ -68,7 +69,7 @@ public class NFA implements NFAInterface {
      * @param toState   is the label of the state where the transition ends
      */
     public void addTransition(String fromState, char onSymb, String toState) {
-        if (!alphabet.contains(onSymb)) {
+        if (!alphabet.contains(onSymb) && onSymb != 'e') {
             alphabet.add(onSymb);
         }
         getState(fromState).addTransition(onSymb, getState(toState));
@@ -126,17 +127,46 @@ public class NFA implements NFAInterface {
      * @return equivalent DFA
      */
     public DFA getDFA() {
-            // TODO: THIS
-            DFA test = new DFA();
+        // TODO: THIS
+        DFA retDFA = new DFA();
+        HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = getAllPossibleStates();
 
-            NFAState s = getStartState(); 
-            System.out.println(s);      
-            System.out.println("ECLOSURE STATES TO FOLLOW");
-            for (NFAState state : eClosure(s)) {
-                System.out.println(state);
+        return retDFA;
+
+    }
+
+    private HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> getAllPossibleStates() {
+        HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = new HashMap<Character, HashMap<NFAState, HashSet<NFAState>>>();
+        for (NFAState state : states) {
+            for (Character char_ : alphabet) {
+                HashSet<NFAState> possible_init = getStatesForChar(char_, state, new HashSet<NFAState>());
+                if (possible_states.get(char_) == null) {
+                    possible_states.put(char_, new HashMap<NFAState, HashSet<NFAState>>());
+                }
+                possible_state.get(char_).put(state, possible_init);
             }
-            
-            return test;
+        }
+        return possible_states;
+    }
+
+    private HashSet<NFAState> getStatesForChar(Character character, NFAState state, HashSet<NFAState> checked) {
+        HashSet<NFAState> from_state = new HashSet<NFAState>();
+        HashSet<NFAState> e_closed = eClosure(state);
+        for (NFAState s : e_closed) {
+            if (!checked.contains(s)) {
+                HashSet<NFAState> transits_char = s.transition(character);
+                if (transits_char != null) {
+                    for (NFAState state_char : transits_char) {
+                        if (!from_state.contains(state_char)) {
+                            from_state.addAll(eClosure(state_char));
+                        }
+                    }
+                    checked.add(s);
+                }
+            }
+        }
+
+        return from_state;
     }
 
     /**
@@ -165,11 +195,11 @@ public class NFA implements NFAInterface {
 
     private HashSet<NFAState> eClosureRecurse(NFAState s, HashSet<NFAState> visited) {
         HashSet<NFAState> eClosed = new HashSet<NFAState>();
+        visited.add(s);
+        eClosed.add(s);
         HashSet<NFAState> toVisit = s.transition('e') == null ? new HashSet<NFAState>() : s.transition('e');
-        for (NFAState state: toVisit) {
+        for (NFAState state : toVisit) {
             if (!visited.contains(state)) {
-                visited.add(state);
-                eClosed.add(state);
                 eClosed.addAll(eClosureRecurse(state, visited));
             }
         }
@@ -177,8 +207,8 @@ public class NFA implements NFAInterface {
     }
 
     public String toString() {
-            // TODO: THIS
-            return "";
+        // TODO: THIS
+        return "";
     }
 
     /**
