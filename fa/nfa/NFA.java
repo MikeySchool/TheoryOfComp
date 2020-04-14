@@ -130,7 +130,8 @@ public class NFA implements NFAInterface {
         DFA retDFA = new DFA();
         HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = getAllPossibleStates();
         HashSet<NFAState> start_state = eClosure(getStartState());
-        retDFA = getDFABFS(start_state, possible_states, retDFA, true, new HashSet<String>(), new HashSet<String>());
+        retDFA = getDFABFS(start_state, possible_states, retDFA, true, new HashSet<String>(), new HashSet<String>(),
+                "");
         return retDFA;
     }
 
@@ -154,7 +155,7 @@ public class NFA implements NFAInterface {
      */
     private DFA getDFABFS(HashSet<NFAState> states,
             HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states, DFA dfa, boolean initial,
-            HashSet<String> seen, HashSet<String> states_visited) {
+            HashSet<String> seen, HashSet<String> states_visited, String startState) {
         String name = "";
         HashMap<Character, HashSet<NFAState>> transitions = new HashMap<Character, HashSet<NFAState>>();
 
@@ -169,14 +170,14 @@ public class NFA implements NFAInterface {
         }
 
         if (initial) {
-            dfa.addStartState(name);
+            startState = name;
         }
 
-        if (!states_visited.contains(name) && !name.equals("")) {
+        if (states_visited.contains(name) || name.equals("")) {
+            return dfa;
+        } else {
             seen.add(name);
             states_visited.add(name);
-        } else {
-            return dfa;
         }
 
         for (Character c : transitions.keySet()) {
@@ -191,8 +192,18 @@ public class NFA implements NFAInterface {
                 }
             }
 
+            if (name.equals(startState)) {
+                if (finalFlag && name.equals(newName)) {
+                    dfa.addFinalState(name);
+                    dfa.addStartState(name);
+                } else {
+                    dfa.addStartState(name);
+                }
+            }
+
             if (newName.equals("")) {
                 String dead = "dead";
+                newName = dead;
                 if (!seen.contains(dead)) {
                     seen.add(dead);
                     dfa.addState(dead);
@@ -200,25 +211,23 @@ public class NFA implements NFAInterface {
                         dfa.addTransition(dead, c_, dead);
                     }
                 }
-                dfa.addTransition(name, c, "dead");
-
+                dfa.addTransition(name, c, newName);
                 continue;
             }
+
             if (finalFlag) {
                 if (!seen.contains(newName)) {
                     seen.add(newName);
                     dfa.addFinalState(newName);
                 }
-                dfa.addTransition(name, c, newName);
             } else {
                 if (!seen.contains(newName)) {
                     seen.add(newName);
                     dfa.addState(newName);
                 }
-                dfa.addTransition(name, c, newName);
             }
-
-            dfa = getDFABFS(transitions_new, possible_states, dfa, false, seen, states_visited);
+            dfa.addTransition(name, c, newName);
+            dfa = getDFABFS(transitions_new, possible_states, dfa, false, seen, states_visited, startState);
         }
         return dfa;
     }
