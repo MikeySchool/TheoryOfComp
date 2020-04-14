@@ -200,12 +200,9 @@ public class NFA implements NFAInterface {
             if (finalFlag) {
                 if (!seen.contains(newName)) {
                     seen.add(newName);
-                    dfa.addTransition(name, c, newName);
-                } else {
                     dfa.addFinalState(newName);
-
                 }
-
+                dfa.addTransition(name, c, newName);
             } else {
                 if (!seen.contains(newName)) {
                     seen.add(newName);
