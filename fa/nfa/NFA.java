@@ -131,15 +131,15 @@ public class NFA implements NFAInterface {
         DFA retDFA = new DFA();
         HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = getAllPossibleStates();
         HashSet<NFAState> start_state = eClosure(getStartState());
-        for (Character c : alphabet) {
-            for (NFAState s : states) {
-                System.out.println("State: " + s + ", Character: " + c + " : ");
-                for (NFAState st : possible_states.get(c).get(s)) {
-                    System.out.print(st);
-                }
-                System.out.println();
-            }
-        }
+        // for (Character c : alphabet) {
+        //     for (NFAState s : states) {
+              
+        //         for (NFAState st : possible_states.get(c).get(s)) {
+        //             System.out.print(st);
+        //         }
+        //         System.out.println();
+        //     }
+        // }
         retDFA = getDFAInitialState(start_state, possible_states, retDFA, true, new HashSet<String>(),
                 new HashSet<String>());
         return retDFA;
@@ -300,8 +300,39 @@ public class NFA implements NFAInterface {
     }
 
     public String toString() {
-        // TODO: THIS
-        return "";
+        String s = "Q = {" ;
+        for (NFAState st : states) {
+            s += st.getName();
+            s += " ";
+        }
+        s += "}\n";
+        s += "Sigma = {";
+       
+        for (Character c : alphabet) {
+           
+            s += c;
+            s += " ";
+        }
+        
+        s += "}" + '\n' + "delta = " + '\n' + '\t' + '\t';
+        for (Character c : alphabet){
+            s += c;
+            s += '\t';
+        }
+        s+= '\n';
+        HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possStates = getAllPossibleStates();
+        for(NFAState st : states){
+            s +='\t' + st.getName();
+            for(Character c : alphabet){
+                s += '\t';
+                s+= possStates.get(c).get(st).toString();
+            }
+            s+= '\n';
+        }
+        s += "q0 = " + getStartState() + "\n";
+        s += "F = {" + getFinalStates() + "}\n";
+
+        return s;
     }
 
     /**
