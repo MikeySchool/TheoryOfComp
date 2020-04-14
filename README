@@ -1,1 +1,36 @@
-PUSHING A READ ME FOR THE CASE OF MAKING SURE THE GITIGNORE WORKS
+# Project 2: Nondeterministic Finite Automata
+
+* Author: Mikey Krentz, Brandon Burr
+* Class: CS361 Section 001
+* Semester: Spring 2020
+
+## Overview
+
+This program constructs an NFA from a given text file. The NFA can be converted to a DFA if the user so wishes it.
+
+## Compiling and Using
+
+javac fa/nfa/NFADriver.javac
+java fa.nfa.NFADriver <test_file>
+
+## Discussion
+
+Overall the concept of this project was very straightforward. There were a few
+significant opportunities for good recursive implementations, and there wasn't
+much required outside of the primary goal of the project.
+
+## Testing
+
+To test, we used the default files, and tried to also implement a few cyclic NFA's
+to see if we could trip our code up. Ultimately, we ended up tripping up when writing
+an NFA where the initial state was also an accept state. This was difficult, and we don't
+know how we could have done it correclty, in hindsight. Our NFA accepted this, but we couldn't
+seem to make a proper DFA to accept this same requirement.
+
+## Extra Credit
+
+NONE OFFERED
+
+## Sources used
+
+NONE

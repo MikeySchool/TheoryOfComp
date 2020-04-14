@@ -127,25 +127,32 @@ public class NFA implements NFAInterface {
      * @return equivalent DFA
      */
     public DFA getDFA() {
-        // TODO: THIS
         DFA retDFA = new DFA();
         HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = getAllPossibleStates();
         HashSet<NFAState> start_state = eClosure(getStartState());
-        // for (Character c : alphabet) {
-        //     for (NFAState s : states) {
-              
-        //         for (NFAState st : possible_states.get(c).get(s)) {
-        //             System.out.print(st);
-        //         }
-        //         System.out.println();
-        //     }
-        // }
-        retDFA = getDFAInitialState(start_state, possible_states, retDFA, true, new HashSet<String>(),
-                new HashSet<String>());
+        retDFA = getDFABFS(start_state, possible_states, retDFA, true, new HashSet<String>(), new HashSet<String>());
         return retDFA;
     }
 
-    private DFA getDFAInitialState(HashSet<NFAState> states,
+    /**
+     * This is our breadth first approach to getting our DFA. It was written as a
+     * helper function initially with the intention of breaking our function down to
+     * multiple pieces. Ultimately, we Add a state to the theoretical queue
+     * (dequeued with a recursive call to this function), and parse all potential
+     * states associated with each character for this state. If the state is already
+     * existant in our DFA states, we ignore it! A dead state is added in the case
+     * that a transition does not exist in the NFA for the requested state/character
+     * relationship. This ensures that our DFA is complete.
+     * 
+     * @param states
+     * @param possible_states
+     * @param dfa
+     * @param initial
+     * @param seen
+     * @param states_visited
+     * @return DFA
+     */
+    private DFA getDFABFS(HashSet<NFAState> states,
             HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states, DFA dfa, boolean initial,
             HashSet<String> seen, HashSet<String> states_visited) {
         String name = "";
@@ -211,23 +218,18 @@ public class NFA implements NFAInterface {
                 dfa.addTransition(name, c, newName);
             }
 
-            dfa = getDFAInitialState(transitions_new, possible_states, dfa, false, seen, states_visited);
+            dfa = getDFABFS(transitions_new, possible_states, dfa, false, seen, states_visited);
         }
         return dfa;
     }
 
-    public DFAState getDFAState(NFAState state, HashSet<NFAState> transitions) {
-        DFAState newState = new DFAState(""); // IS FINAL?
-
-        return newState;
-    }
-
-    public DFAState getDFAFinalState(NFAState s, HashSet<NFAState> transitions) {
-        DFAState newState = new DFAState(""); // IS FINAL?
-
-        return newState;
-    }
-
+    /**
+     * Constructs and returns an association of Character to State to Set of States.
+     * Think of this as our first step to converting our NFA to a DFA. We need a
+     * table of state character relationship to use for unioning when building.
+     * 
+     * @return HashMap<Character, HashMap<NFAState, HashSet<NFAState>>>
+     */
     private HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> getAllPossibleStates() {
         HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = new HashMap<Character, HashMap<NFAState, HashSet<NFAState>>>();
         for (NFAState state : states) {
@@ -242,6 +244,15 @@ public class NFA implements NFAInterface {
         return possible_states;
     }
 
+    /**
+     * Gets all potential transitions from a specific state on a given character,
+     * taking eclosure values into account.
+     * 
+     * @param character
+     * @param state
+     * @param checked
+     * @return HashSet<NFAState>
+     */
     private HashSet<NFAState> getStatesForChar(Character character, NFAState state, HashSet<NFAState> checked) {
         HashSet<NFAState> from_state = new HashSet<NFAState>();
         HashSet<NFAState> e_closed = eClosure(state);
@@ -286,6 +297,13 @@ public class NFA implements NFAInterface {
         return eClosed;
     }
 
+    /**
+     * This is the recursive helper to eClosure to allow us to take a depth-frist
+     * approach to finding the eclosure of the given NFAState.
+     * 
+     * @param NFAstate s, HashSet<NFAState visited
+     * @return HashSet<NFAState>
+     */
     private HashSet<NFAState> eClosureRecurse(NFAState s, HashSet<NFAState> visited) {
         HashSet<NFAState> eClosed = new HashSet<NFAState>();
         visited.add(s);
@@ -299,35 +317,40 @@ public class NFA implements NFAInterface {
         return eClosed;
     }
 
+    /**
+     * Returns a string representation of the NFA class
+     * 
+     * @return String
+     */
     public String toString() {
-        String s = "Q = {" ;
+        String s = "Q = {";
         for (NFAState st : states) {
             s += st.getName();
             s += " ";
         }
         s += "}\n";
         s += "Sigma = {";
-       
+
         for (Character c : alphabet) {
-           
+
             s += c;
             s += " ";
         }
-        
+
         s += "}" + '\n' + "delta = " + '\n' + '\t' + '\t';
-        for (Character c : alphabet){
+        for (Character c : alphabet) {
             s += c;
             s += '\t';
         }
-        s+= '\n';
+        s += '\n';
         HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possStates = getAllPossibleStates();
-        for(NFAState st : states){
-            s +='\t' + st.getName();
-            for(Character c : alphabet){
+        for (NFAState st : states) {
+            s += '\t' + st.getName();
+            for (Character c : alphabet) {
                 s += '\t';
-                s+= possStates.get(c).get(st).toString();
+                s += possStates.get(c).get(st).toString();
             }
-            s+= '\n';
+            s += '\n';
         }
         s += "q0 = " + getStartState() + "\n";
         s += "F = {" + getFinalStates() + "}\n";
