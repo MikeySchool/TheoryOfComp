@@ -130,9 +130,105 @@ public class NFA implements NFAInterface {
         // TODO: THIS
         DFA retDFA = new DFA();
         HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states = getAllPossibleStates();
-
+        HashSet<NFAState> start_state = eClosure(getStartState());
+        for (Character c : alphabet) {
+            for (NFAState s : states) {
+                System.out.println("State: " + s + ", Character: " + c + " : ");
+                for (NFAState st : possible_states.get(c).get(s)) {
+                    System.out.print(st);
+                }
+                System.out.println();
+            }
+        }
+        retDFA = getDFAInitialState(start_state, possible_states, retDFA, true, new HashSet<String>(),
+                new HashSet<String>());
         return retDFA;
+    }
 
+    private DFA getDFAInitialState(HashSet<NFAState> states,
+            HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> possible_states, DFA dfa, boolean initial,
+            HashSet<String> seen, HashSet<String> states_visited) {
+        String name = "";
+        HashMap<Character, HashSet<NFAState>> transitions = new HashMap<Character, HashSet<NFAState>>();
+
+        for (NFAState s : states) {
+            name += s;
+            for (Character c : alphabet) {
+                if (transitions.get(c) == null) {
+                    transitions.put(c, new HashSet<NFAState>());
+                }
+                transitions.get(c).addAll(possible_states.get(c).get(s));
+            }
+        }
+
+        if (initial) {
+            dfa.addStartState(name);
+        }
+
+        if (!states_visited.contains(name) && !name.equals("")) {
+            seen.add(name);
+            states_visited.add(name);
+        } else {
+            return dfa;
+        }
+
+        for (Character c : transitions.keySet()) {
+            String newName = "";
+            boolean finalFlag = false;
+            HashSet<NFAState> transitions_new = transitions.get(c);
+
+            for (NFAState ss : transitions_new) {
+                newName += ss;
+                if (ss.isFinal()) {
+                    finalFlag = true;
+                }
+            }
+
+            if (newName.equals("")) {
+                String dead = "dead";
+                if (!seen.contains(dead)) {
+                    seen.add(dead);
+                    dfa.addState(dead);
+                    for (Character c_ : alphabet) {
+                        dfa.addTransition(dead, c_, dead);
+                    }
+                }
+                dfa.addTransition(name, c, "dead");
+
+                continue;
+            }
+            if (finalFlag) {
+                if (!seen.contains(newName)) {
+                    seen.add(newName);
+                    dfa.addTransition(name, c, newName);
+                } else {
+                    dfa.addFinalState(newName);
+
+                }
+
+            } else {
+                if (!seen.contains(newName)) {
+                    seen.add(newName);
+                    dfa.addState(newName);
+                }
+                dfa.addTransition(name, c, newName);
+            }
+
+            dfa = getDFAInitialState(transitions_new, possible_states, dfa, false, seen, states_visited);
+        }
+        return dfa;
+    }
+
+    public DFAState getDFAState(NFAState state, HashSet<NFAState> transitions) {
+        DFAState newState = new DFAState(""); // IS FINAL?
+
+        return newState;
+    }
+
+    public DFAState getDFAFinalState(NFAState s, HashSet<NFAState> transitions) {
+        DFAState newState = new DFAState(""); // IS FINAL?
+
+        return newState;
     }
 
     private HashMap<Character, HashMap<NFAState, HashSet<NFAState>>> getAllPossibleStates() {
@@ -143,7 +239,7 @@ public class NFA implements NFAInterface {
                 if (possible_states.get(char_) == null) {
                     possible_states.put(char_, new HashMap<NFAState, HashSet<NFAState>>());
                 }
-                possible_state.get(char_).put(state, possible_init);
+                possible_states.get(char_).put(state, possible_init);
             }
         }
         return possible_states;
